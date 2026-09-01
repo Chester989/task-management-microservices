@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: servico-notificacoes
+  labels:
+    app: servico-notificacoes
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: servico-notificacoes
+  template:
+    metadata:
+      labels:
+        app: servico-notificacoes
+    spec:
+      containers:
+      - name: servico-notificacoes
+        image: servico-notificacoes:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5004
+        env:
+        - name: BD_HOST
+          value: mariadb
+        - name: BD_UTILIZADOR
+          value: root
+        - name: BD_SENHA
+          valueFrom:
+            secretKeyRef:
+              name: app-segredos
+              key: mysql-root-password
+        - name: BD_NOME
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: mysql-database
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: servico-notificacoes
+spec:
+  selector:
+    app: servico-notificacoes
+  ports:
+  - port: 5004
+    targetPort: 5004
+  type: ClusterIP

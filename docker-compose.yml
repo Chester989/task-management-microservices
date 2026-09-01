@@ -1,0 +1,106 @@
+version: "3.8"
+
+services:
+  mariadb:
+    image: mariadb:10.11
+    container_name: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Define MYSQL_ROOT_PASSWORD no ficheiro .env}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-gestao_tarefas}
+    volumes:
+      - dados_mariadb:/var/lib/mysql
+    networks:
+      - rede_microsservicos
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  servico-utilizadores:
+    build: ./servico-utilizadores
+    container_name: servico-utilizadores
+    environment:
+      BD_HOST: mariadb
+      BD_UTILIZADOR: root
+      BD_SENHA: ${MYSQL_ROOT_PASSWORD:?Define MYSQL_ROOT_PASSWORD no ficheiro .env}
+      BD_NOME: ${MYSQL_DATABASE:-gestao_tarefas}
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    networks:
+      - rede_microsservicos
+
+  servico-autenticacao:
+    build: ./servico-autenticacao
+    container_name: servico-autenticacao
+    environment:
+      JWT_SEGREDO: ${JWT_SEGREDO:?Define JWT_SEGREDO no ficheiro .env}
+      URL_UTILIZADORES: http://servico-utilizadores:5002
+    depends_on:
+      - servico-utilizadores
+    networks:
+      - rede_microsservicos
+
+  servico-tarefas:
+    build: ./servico-tarefas
+    container_name: servico-tarefas
+    environment:
+      BD_HOST: mariadb
+      BD_UTILIZADOR: root
+      BD_SENHA: ${MYSQL_ROOT_PASSWORD:?Define MYSQL_ROOT_PASSWORD no ficheiro .env}
+      BD_NOME: ${MYSQL_DATABASE:-gestao_tarefas}
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    networks:
+      - rede_microsservicos
+
+  servico-notificacoes:
+    build: ./servico-notificacoes
+    container_name: servico-notificacoes
+    environment:
+      BD_HOST: mariadb
+      BD_UTILIZADOR: root
+      BD_SENHA: ${MYSQL_ROOT_PASSWORD:?Define MYSQL_ROOT_PASSWORD no ficheiro .env}
+      BD_NOME: ${MYSQL_DATABASE:-gestao_tarefas}
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    networks:
+      - rede_microsservicos
+
+  orquestrador:
+    build: ./orquestrador
+    container_name: orquestrador
+    environment:
+      URL_AUTENTICACAO: http://servico-autenticacao:5001
+      URL_UTILIZADORES: http://servico-utilizadores:5002
+      URL_TAREFAS: http://servico-tarefas:5003
+      URL_NOTIFICACOES: http://servico-notificacoes:5004
+    ports:
+      - "5000:5000"
+    depends_on:
+      - servico-autenticacao
+      - servico-utilizadores
+      - servico-tarefas
+      - servico-notificacoes
+    networks:
+      - rede_microsservicos
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - orquestrador
+    networks:
+      - rede_microsservicos
+
+networks:
+  rede_microsservicos:
+    driver: bridge
+
+volumes:
+  dados_mariadb:

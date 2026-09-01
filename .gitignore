@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+kubernetes/segredos.yaml
+venv/
+*.egg-info/
+dist/
+build/
+.idea/
+.vscode/

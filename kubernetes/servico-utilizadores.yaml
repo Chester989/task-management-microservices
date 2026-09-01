@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: servico-utilizadores
+  labels:
+    app: servico-utilizadores
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: servico-utilizadores
+  template:
+    metadata:
+      labels:
+        app: servico-utilizadores
+    spec:
+      containers:
+      - name: servico-utilizadores
+        image: servico-utilizadores:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5002
+        env:
+        - name: BD_HOST
+          value: mariadb
+        - name: BD_UTILIZADOR
+          value: root
+        - name: BD_SENHA
+          valueFrom:
+            secretKeyRef:
+              name: app-segredos
+              key: mysql-root-password
+        - name: BD_NOME
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: mysql-database
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: servico-utilizadores
+spec:
+  selector:
+    app: servico-utilizadores
+  ports:
+  - port: 5002
+    targetPort: 5002
+  type: ClusterIP

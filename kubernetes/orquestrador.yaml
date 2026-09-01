@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orquestrador
+  labels:
+    app: orquestrador
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orquestrador
+  template:
+    metadata:
+      labels:
+        app: orquestrador
+    spec:
+      containers:
+      - name: orquestrador
+        image: orquestrador:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5000
+        env:
+        - name: URL_AUTENTICACAO
+          value: http://servico-autenticacao:5001
+        - name: URL_UTILIZADORES
+          value: http://servico-utilizadores:5002
+        - name: URL_TAREFAS
+          value: http://servico-tarefas:5003
+        - name: URL_NOTIFICACOES
+          value: http://servico-notificacoes:5004
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orquestrador
+spec:
+  selector:
+    app: orquestrador
+  ports:
+  - port: 5000
+    targetPort: 5000
+    nodePort: 30000
+  type: NodePort

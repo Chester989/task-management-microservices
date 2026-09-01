@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: servico-autenticacao
+  labels:
+    app: servico-autenticacao
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: servico-autenticacao
+  template:
+    metadata:
+      labels:
+        app: servico-autenticacao
+    spec:
+      containers:
+      - name: servico-autenticacao
+        image: servico-autenticacao:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5001
+        env:
+        - name: JWT_SEGREDO
+          valueFrom:
+            secretKeyRef:
+              name: app-segredos
+              key: jwt-segredo
+        - name: URL_UTILIZADORES
+          value: http://servico-utilizadores:5002
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: servico-autenticacao
+spec:
+  selector:
+    app: servico-autenticacao
+  ports:
+  - port: 5001
+    targetPort: 5001
+  type: ClusterIP

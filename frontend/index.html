@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestao de Tarefas - ADM</title>
+    <style>
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        
+        .cabecalho {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cabecalho h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .cabecalho .info-utilizador {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .cabecalho .info-utilizador span {
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-principal {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-principal:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-perigo {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .btn-perigo:hover {
+            background-color: #c0392b;
+        }
+
+        .btn-sucesso {
+            background-color: #27ae60;
+            color: white;
+        }
+
+        .btn-sucesso:hover {
+            background-color: #219a52;
+        }
+
+        .btn-secundario {
+            background-color: #95a5a6;
+            color: white;
+        }
+
+        .btn-secundario:hover {
+            background-color: #7f8c8d;
+        }
+
+        .btn-notif {
+            background-color: transparent;
+            color: white;
+            border: 1px solid white;
+            position: relative;
+        }
+
+        .btn-notif:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .badge-notif {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        
+        .pagina-auth {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+        }
+
+        .caixa-auth {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .caixa-auth h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #2c3e50;
+        }
+
+        .grupo-campo {
+            margin-bottom: 15px;
+        }
+
+        .grupo-campo label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .grupo-campo input, .grupo-campo select, .grupo-campo textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .grupo-campo input:focus, .grupo-campo select:focus, .grupo-campo textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .caixa-auth .btn {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .link-auth {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .link-auth a {
+            color: #3498db;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        
+        .conteudo {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .painel-topo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .painel-topo h2 {
+            color: #2c3e50;
+            font-size: 22px;
+        }
+
+        
+        .lista-tarefas {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .cartao-tarefa {
+            background: white;
+            padding: 18px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-left: 4px solid #3498db;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .cartao-tarefa.pendente {
+            border-left-color: #f39c12;
+        }
+
+        .cartao-tarefa.em_progresso {
+            border-left-color: #3498db;
+        }
+
+        .cartao-tarefa.concluida {
+            border-left-color: #27ae60;
+            opacity: 0.7;
+        }
+
+        .cartao-tarefa .info-tarefa {
+            flex: 1;
+        }
+
+        .cartao-tarefa .titulo-tarefa {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+
+        .cartao-tarefa .descricao-tarefa {
+            font-size: 13px;
+            color: #777;
+            margin-bottom: 8px;
+        }
+
+        .cartao-tarefa .meta-tarefa {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .cartao-tarefa .meta-tarefa .estado {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .estado-pendente {
+            background: #fef3cd;
+            color: #856404;
+        }
+
+        .estado-em_progresso {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .estado-concluida {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .cartao-tarefa .acoes-tarefa {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+            margin-left: 15px;
+        }
+
+        .acoes-tarefa .btn {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        
+        .modal-fundo {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-fundo.ativo {
+            display: flex;
+        }
+
+        .modal-conteudo {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 450px;
+            max-width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-conteudo h3 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .modal-acoes {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+
+        
+        .painel-notificacoes {
+            position: fixed;
+            top: 60px;
+            right: 20px;
+            width: 350px;
+            max-height: 400px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 50;
+            display: none;
+            overflow-y: auto;
+        }
+
+        .painel-notificacoes.ativo {
+            display: block;
+        }
+
+        .painel-notificacoes h3 {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        .notificacao-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 13px;
+            color: #555;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .notificacao-item:hover {
+            background: #f8f9fa;
+        }
+
+        .notificacao-item.nao-lida {
+            background: #eef6ff;
+            font-weight: 500;
+        }
+
+        .notificacao-item .data-notif {
+            font-size: 11px;
+            color: #aaa;
+            margin-top: 4px;
+        }
+
+        .sem-notificacoes {
+            padding: 20px;
+            text-align: center;
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        
+        .mensagem {
+            padding: 12px 16px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .mensagem.erro {
+            background: #fce4e4;
+            color: #c0392b;
+            display: block;
+        }
+
+        .mensagem.sucesso {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        
+        .sem-tarefas {
+            text-align: center;
+            padding: 60px 20px;
+            color: #aaa;
+        }
+
+        .sem-tarefas p {
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        
+        .rodape {
+            text-align: center;
+            padding: 20px;
+            color: #aaa;
+            font-size: 12px;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    
+    <div id="pagina-auth" class="pagina-auth">
+        <div class="caixa-auth">
+            
+            <div id="form-login">
+                <h2>Iniciar Sessao</h2>
+                <div id="msg-login" class="mensagem"></div>
+                <div class="grupo-campo">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" placeholder="exemplo@email.com">
+                </div>
+                <div class="grupo-campo">
+                    <label for="login-senha">Senha</label>
+                    <input type="password" id="login-senha" placeholder="A sua senha">
+                </div>
+                <button class="btn btn-principal" onclick="fazerLogin()">Entrar</button>
+                <p class="link-auth">Ainda nao tem conta? <a onclick="mostrarRegisto()">Registar-se</a></p>
+            </div>
+
+            
+            <div id="form-registo" style="display: none;">
+                <h2>Criar Conta</h2>
+                <div id="msg-registo" class="mensagem"></div>
+                <div class="grupo-campo">
+                    <label for="registo-nome">Nome</label>
+                    <input type="text" id="registo-nome" placeholder="O seu nome">
+                </div>
+                <div class="grupo-campo">
+                    <label for="registo-email">Email</label>
+                    <input type="email" id="registo-email" placeholder="exemplo@email.com">
+                </div>
+                <div class="grupo-campo">
+                    <label for="registo-senha">Senha</label>
+                    <input type="password" id="registo-senha" placeholder="Escolha uma senha">
+                </div>
+                <button class="btn btn-principal" onclick="fazerRegisto()">Registar</button>
+                <p class="link-auth">Ja tem conta? <a onclick="mostrarLogin()">Iniciar sessao</a></p>
+            </div>
+        </div>
+    </div>
+
+    
+    <div id="pagina-principal" style="display: none;">
+        
+        <div class="cabecalho">
+            <h1>Gestao de Tarefas</h1>
+            <div class="info-utilizador">
+                <span id="nome-utilizador"></span>
+                <button class="btn btn-notif" onclick="alternarNotificacoes()">
+                    Notificacoes
+                    <span id="badge-notif" class="badge-notif" style="display:none;">0</span>
+                </button>
+                <button class="btn btn-secundario" onclick="terminarSessao()">Sair</button>
+            </div>
+        </div>
+
+        
+        <div id="painel-notificacoes" class="painel-notificacoes">
+            <h3>Notificacoes</h3>
+            <div id="lista-notificacoes"></div>
+        </div>
+
+        
+        <div class="conteudo">
+            <div class="painel-topo">
+                <h2>As minhas tarefas</h2>
+                <button class="btn btn-sucesso" onclick="abrirModalCriar()">+ Nova tarefa</button>
+            </div>
+
+            <div id="msg-dashboard" class="mensagem"></div>
+
+            <div id="lista-tarefas" class="lista-tarefas">
+                
+            </div>
+
+            <div id="sem-tarefas" class="sem-tarefas" style="display:none;">
+                <p>Ainda nao tem tarefas.</p>
+                <button class="btn btn-principal" onclick="abrirModalCriar()">Criar a primeira tarefa</button>
+            </div>
+        </div>
+
+        <div class="rodape">
+            Sistema de Gestao de Tarefas &mdash; ADM 2025/2026 &mdash; Joao Silva, Joao Patrocinio, Joao Maravilhoso
+        </div>
+    </div>
+
+    
+    <div id="modal-tarefa" class="modal-fundo">
+        <div class="modal-conteudo">
+            <h3 id="modal-titulo">Nova Tarefa</h3>
+            <div id="msg-modal" class="mensagem"></div>
+            <input type="hidden" id="tarefa-id">
+            <div class="grupo-campo">
+                <label for="tarefa-titulo">Titulo</label>
+                <input type="text" id="tarefa-titulo" placeholder="Titulo da tarefa">
+            </div>
+            <div class="grupo-campo">
+                <label for="tarefa-descricao">Descricao</label>
+                <textarea id="tarefa-descricao" rows="3" placeholder="Descricao (opcional)"></textarea>
+            </div>
+            <div class="grupo-campo">
+                <label for="tarefa-estado">Estado</label>
+                <select id="tarefa-estado">
+                    <option value="pendente">Pendente</option>
+                    <option value="em_progresso">Em progresso</option>
+                    <option value="concluida">Concluida</option>
+                </select>
+            </div>
+            <div class="grupo-campo">
+                <label for="tarefa-data">Data limite</label>
+                <input type="date" id="tarefa-data">
+            </div>
+            <div class="modal-acoes">
+                <button class="btn btn-secundario" onclick="fecharModal()">Cancelar</button>
+                <button class="btn btn-principal" onclick="guardarTarefa()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        const API_URL = 'http://localhost:5000';
+
+        let token = localStorage.getItem('token') || null;
+        let utilizador = JSON.parse(localStorage.getItem('utilizador') || 'null');
+
+        async function pedidoAPI(rota, metodo = 'GET', dados = null) {
+            const opcoes = {
+                method: metodo,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+
+            if (token) {
+                opcoes.headers['Authorization'] = 'Bearer ' + token;
+            }
+
+            if (dados) {
+                opcoes.body = JSON.stringify(dados);
+            }
+
+            try {
+                const resposta = await fetch(API_URL + rota, opcoes);
+                const resultado = await resposta.json();
+
+                if (resposta.status === 401 && token) {
+                    terminarSessao();
+                    return null;
+                }
+
+                resultado._status = resposta.status;
+                return resultado;
+
+            } catch (erro) {
+                console.error('Erro no pedido:', erro);
+                return { erro: 'Erro de ligacao ao servidor. Verifique se o sistema esta a correr.', _status: 0 };
+            }
+        }
+
+        function mostrarMensagem(elementoId, texto, tipo) {
+            const el = document.getElementById(elementoId);
+            el.textContent = texto;
+            el.className = 'mensagem ' + tipo;
+
+            if (tipo === 'sucesso') {
+                setTimeout(() => { el.className = 'mensagem'; }, 5000);
+            }
+        }
+
+        function traduzirEstado(estado) {
+            const mapa = {
+                'pendente': 'Pendente',
+                'em_progresso': 'Em progresso',
+                'concluida': 'Concluida'
+            };
+            return mapa[estado] || estado;
+        }
+
+        function mostrarRegisto() {
+            document.getElementById('form-login').style.display = 'none';
+            document.getElementById('form-registo').style.display = 'block';
+            document.getElementById('msg-login').className = 'mensagem';
+        }
+
+        function mostrarLogin() {
+            document.getElementById('form-registo').style.display = 'none';
+            document.getElementById('form-login').style.display = 'block';
+            document.getElementById('msg-registo').className = 'mensagem';
+        }
+
+        async function fazerLogin() {
+            const email = document.getElementById('login-email').value.trim();
+            const senha = document.getElementById('login-senha').value;
+
+            if (!email || !senha) {
+                mostrarMensagem('msg-login', 'Preencha todos os campos.', 'erro');
+                return;
+            }
+
+            const resultado = await pedidoAPI('/api/auth/login', 'POST', { email, senha });
+
+            if (!resultado) return;
+
+            if (resultado._status === 200) {
+                token = resultado.token;
+                utilizador = resultado.utilizador;
+                localStorage.setItem('token', token);
+                localStorage.setItem('utilizador', JSON.stringify(utilizador));
+                entrarNoDashboard();
+            } else {
+                mostrarMensagem('msg-login', resultado.erro || 'Erro ao fazer login.', 'erro');
+            }
+        }
+
+        async function fazerRegisto() {
+            const nome = document.getElementById('registo-nome').value.trim();
+            const email = document.getElementById('registo-email').value.trim();
+            const senha = document.getElementById('registo-senha').value;
+
+            if (!nome || !email || !senha) {
+                mostrarMensagem('msg-registo', 'Preencha todos os campos.', 'erro');
+                return;
+            }
+
+            const resultado = await pedidoAPI('/api/auth/registar', 'POST', { nome, email, senha });
+
+            if (!resultado) return;
+
+            if (resultado._status === 201) {
+                token = resultado.token;
+                utilizador = resultado.utilizador;
+                localStorage.setItem('token', token);
+                localStorage.setItem('utilizador', JSON.stringify(utilizador));
+                entrarNoDashboard();
+            } else {
+                mostrarMensagem('msg-registo', resultado.erro || 'Erro ao registar.', 'erro');
+            }
+        }
+
+        function terminarSessao() {
+            token = null;
+            utilizador = null;
+            localStorage.removeItem('token');
+            localStorage.removeItem('utilizador');
+            document.getElementById('pagina-auth').style.display = 'flex';
+            document.getElementById('pagina-principal').style.display = 'none';
+            document.getElementById('login-email').value = '';
+            document.getElementById('login-senha').value = '';
+            mostrarLogin();
+        }
+
+        function entrarNoDashboard() {
+            document.getElementById('pagina-auth').style.display = 'none';
+            document.getElementById('pagina-principal').style.display = 'block';
+            document.getElementById('nome-utilizador').textContent = 'Ola, ' + utilizador.nome;
+            carregarTarefas();
+            carregarNotificacoes();
+        }
+
+        async function carregarTarefas() {
+            const resultado = await pedidoAPI('/api/tarefas');
+
+            if (!resultado) return;
+
+            const container = document.getElementById('lista-tarefas');
+            const semTarefas = document.getElementById('sem-tarefas');
+
+            if (Array.isArray(resultado) && resultado.length > 0) {
+                semTarefas.style.display = 'none';
+                container.innerHTML = resultado.map(tarefa => `
+                    <div class="cartao-tarefa ${tarefa.estado}">
+                        <div class="info-tarefa">
+                            <div class="titulo-tarefa">${escaparHTML(tarefa.titulo)}</div>
+                            ${tarefa.descricao ? `<div class="descricao-tarefa">${escaparHTML(tarefa.descricao)}</div>` : ''}
+                            <div class="meta-tarefa">
+                                <span class="estado estado-${tarefa.estado}">${traduzirEstado(tarefa.estado)}</span>
+                                ${tarefa.data_limite ? `<span>Prazo: ${tarefa.data_limite}</span>` : ''}
+                                <span>Criada: ${tarefa.criado_em.split(' ')[0]}</span>
+                            </div>
+                        </div>
+                        <div class="acoes-tarefa">
+                            <button class="btn btn-principal" onclick="abrirModalEditar(${tarefa.id}, '${escaparJS(tarefa.titulo)}', '${escaparJS(tarefa.descricao || '')}', '${tarefa.estado}', '${tarefa.data_limite || ''}')">Editar</button>
+                            <button class="btn btn-perigo" onclick="eliminarTarefa(${tarefa.id})">Apagar</button>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '';
+                semTarefas.style.display = 'block';
+            }
+        }
+
+        function escaparHTML(texto) {
+            const el = document.createElement('div');
+            el.textContent = texto;
+            return el.innerHTML;
+        }
+
+        function escaparJS(texto) {
+            return texto.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+        }
+
+        function abrirModalCriar() {
+            document.getElementById('modal-titulo').textContent = 'Nova Tarefa';
+            document.getElementById('tarefa-id').value = '';
+            document.getElementById('tarefa-titulo').value = '';
+            document.getElementById('tarefa-descricao').value = '';
+            document.getElementById('tarefa-estado').value = 'pendente';
+            document.getElementById('tarefa-data').value = '';
+            document.getElementById('msg-modal').className = 'mensagem';
+            document.getElementById('modal-tarefa').classList.add('ativo');
+        }
+
+        function abrirModalEditar(id, titulo, descricao, estado, dataLimite) {
+            document.getElementById('modal-titulo').textContent = 'Editar Tarefa';
+            document.getElementById('tarefa-id').value = id;
+            document.getElementById('tarefa-titulo').value = titulo;
+            document.getElementById('tarefa-descricao').value = descricao;
+            document.getElementById('tarefa-estado').value = estado;
+            document.getElementById('tarefa-data').value = dataLimite;
+            document.getElementById('msg-modal').className = 'mensagem';
+            document.getElementById('modal-tarefa').classList.add('ativo');
+        }
+
+        function fecharModal() {
+            document.getElementById('modal-tarefa').classList.remove('ativo');
+        }
+
+        async function guardarTarefa() {
+            const id = document.getElementById('tarefa-id').value;
+            const titulo = document.getElementById('tarefa-titulo').value.trim();
+            const descricao = document.getElementById('tarefa-descricao').value.trim();
+            const estado = document.getElementById('tarefa-estado').value;
+            const dataLimite = document.getElementById('tarefa-data').value;
+
+            if (!titulo) {
+                mostrarMensagem('msg-modal', 'O titulo e obrigatorio.', 'erro');
+                return;
+            }
+
+            const dados = { titulo, descricao, estado };
+            if (dataLimite) {
+                dados.data_limite = dataLimite;
+            }
+
+            let resultado;
+
+            if (id) {
+                resultado = await pedidoAPI('/api/tarefas/' + id, 'PUT', dados);
+            } else {
+                resultado = await pedidoAPI('/api/tarefas', 'POST', dados);
+            }
+
+            if (!resultado) return;
+
+            if (resultado._status === 200 || resultado._status === 201) {
+                fecharModal();
+                carregarTarefas();
+                mostrarMensagem('msg-dashboard', resultado.mensagem || 'Tarefa guardada.', 'sucesso');
+            } else {
+                mostrarMensagem('msg-modal', resultado.erro || 'Erro ao guardar tarefa.', 'erro');
+            }
+        }
+
+        async function eliminarTarefa(id) {
+            if (!confirm('Tem a certeza que quer apagar esta tarefa?')) {
+                return;
+            }
+
+            const resultado = await pedidoAPI('/api/tarefas/' + id, 'DELETE');
+
+            if (!resultado) return;
+
+            if (resultado._status === 200) {
+                carregarTarefas();
+                mostrarMensagem('msg-dashboard', 'Tarefa eliminada.', 'sucesso');
+            } else {
+                mostrarMensagem('msg-dashboard', resultado.erro || 'Erro ao eliminar tarefa.', 'erro');
+            }
+        }
+
+        function alternarNotificacoes() {
+            const painel = document.getElementById('painel-notificacoes');
+            painel.classList.toggle('ativo');
+
+            if (painel.classList.contains('ativo')) {
+                carregarNotificacoes();
+            }
+        }
+
+        async function carregarNotificacoes() {
+            const resultado = await pedidoAPI('/api/notificacoes');
+
+            if (!resultado || !Array.isArray(resultado)) {
+                document.getElementById('lista-notificacoes').innerHTML =
+                    '<div class="sem-notificacoes">Sem notificacoes.</div>';
+                return;
+            }
+
+            const badge = document.getElementById('badge-notif');
+            const naoLidas = resultado.filter(n => !n.lida).length;
+
+            if (naoLidas > 0) {
+                badge.textContent = naoLidas;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+
+            const container = document.getElementById('lista-notificacoes');
+
+            if (resultado.length === 0) {
+                container.innerHTML = '<div class="sem-notificacoes">Sem notificacoes.</div>';
+                return;
+            }
+
+            container.innerHTML = resultado.map(n => `
+                <div class="notificacao-item ${n.lida ? '' : 'nao-lida'}"
+                     onclick="marcarNotificacaoLida(${n.id}, this)">
+                    <div>${escaparHTML(n.mensagem)}</div>
+                    <div class="data-notif">${n.criado_em}</div>
+                </div>
+            `).join('');
+        }
+
+        async function marcarNotificacaoLida(id, elemento) {
+            await pedidoAPI('/api/notificacoes/' + id + '/lida', 'PUT');
+            elemento.classList.remove('nao-lida');
+            carregarNotificacoes();
+        }
+
+        document.getElementById('modal-tarefa').addEventListener('click', function(e) {
+            if (e.target === this) fecharModal();
+        });
+
+        document.addEventListener('click', function(e) {
+            const painel = document.getElementById('painel-notificacoes');
+            const btnNotif = document.querySelector('.btn-notif');
+            if (painel.classList.contains('ativo') && !painel.contains(e.target) && !btnNotif.contains(e.target)) {
+                painel.classList.remove('ativo');
+            }
+        });
+
+        document.getElementById('login-senha').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') fazerLogin();
+        });
+        document.getElementById('registo-senha').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') fazerRegisto();
+        });
+
+        if (token && utilizador) {
+            entrarNoDashboard();
+        }
+    </script>
+
+</body>
+</html>
